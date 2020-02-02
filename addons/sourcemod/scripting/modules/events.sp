@@ -81,12 +81,10 @@ public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 					}
 				}
 				case 2: {
-					for( int ent=MaxClients+1; ent<2048; ++ent ) {
-						if( !IsValidEntity(ent) || !HasEntProp(ent, Prop_Send, "m_hBuilder") ) 
-							continue;
-						else if( GetBuilder(ent) != victim.index )
-							continue;
-						
+					int numobjs = TF2_GetObjectCount(victim.index);
+					/// Always iterate backwards when removing/killing
+					for( int i=numobjs-1; i>=0; --i) {
+						int ent = TF2_GetObject(victim.index, i);
 						SetVariantInt(GetEntProp(ent, Prop_Send, "m_iMaxHealth")+8);
 						AcceptEntityInput(ent, "RemoveHealth");
 					}
