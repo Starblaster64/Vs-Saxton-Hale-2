@@ -322,6 +322,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 		case -1: {}
 		default: {
 			int bFallDamage = (damagetype & DMG_FALL);
+			int client = victim.index;
 			char trigger[32];
 			if( attacker > MaxClients && GetEdictClassname(attacker, trigger, sizeof(trigger)) && !strcmp(trigger, "trigger_hurt", false) )
 			{
@@ -349,7 +350,12 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				}
 				return Plugin_Changed;
 			}
-
+			if( TF2_IsPlayerInCondition(client, TFCond_Jarated)) {
+				ManageBossJarated(victim, attacker);
+				TF2_RemoveCondition(client, TFCond_Jarated);
+				///PrintCenterText(attacker, "You Jarated %s!", name);    ///Future WIP?
+				///PrintCenterText(victim.index, "You Were Just Jarated!");	
+			}
 			if( attacker <= 0 || attacker > MaxClients )
 				return Plugin_Continue;
 
@@ -599,6 +605,13 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 						return Plugin_Changed;
 					victim.flRAGE -= g_vsh2.m_hCvars.FanoWarRage.FloatValue;
 				}
+				/**
+				/// Jarate and its skin(s?)								
+				case 58, 1083, 1105: {
+					if( Call_OnBossJarated(jarateer, jarateed) == Plugin_Changed )
+						return Plugin_Changed;
+				}
+				**/
 				/// Candy Cane
 				case 317: {
 					if( Call_OnBossTakeDamage_OnHitCandyCane(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) == Plugin_Changed )
@@ -1117,12 +1130,13 @@ public void TF2_OnConditionAdded(int client, TFCond condition)
 
 	bool remove;
 	switch( condition ) {
-		case TFCond_Disguised, TFCond_Jarated, TFCond_MarkedForDeath:
+		case TFCond_Disguised, TFCond_MarkedForDeath:		///Jarate cond will be removed in some seperate logic
 			remove = true;
 	}
 
-	if( Call_OnBossConditionChange(player, condition, remove) <= Plugin_Changed && remove )
+	if( Call_OnBossConditionChange(player, condition, remove) <= Plugin_Changed && remove )		{
 		TF2_RemoveCondition(client, condition);
+	}
 }
 
 public void ManageBossMedicCall(const BaseBoss base)
@@ -1170,7 +1184,8 @@ public void ManageBuildingDestroyed(const BaseBoss base, const int building, con
 		}
 	}
 }
-public void ManagePlayerJarated(const BaseBoss attacker, const BaseBoss victim)
+
+public void ManageBossJarated(const BaseBoss victim, const int attacker)			///Reworked code, Working 12/07/2021
 {
 	Action act = Call_OnBossJarated(victim, attacker);
 	if( act > Plugin_Changed )
@@ -1180,6 +1195,7 @@ public void ManagePlayerJarated(const BaseBoss attacker, const BaseBoss victim)
 		case -1: {}
 		case VSH2Boss_Hale, VSH2Boss_Vagineer, VSH2Boss_CBS, VSH2Boss_HHHjr, VSH2Boss_Bunny:
 			victim.flRAGE -= g_vsh2.m_hCvars.JarateRage.FloatValue;
+			
 	}
 }
 

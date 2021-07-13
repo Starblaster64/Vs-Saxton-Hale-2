@@ -290,9 +290,9 @@ public Action PlayerJarated(Event event, const char[] name, bool dontBroadcast)
 	if( !g_vsh2.m_hCvars.Enabled.BoolValue )
 		return Plugin_Continue;
 	
-	BaseBoss jarateer = BaseBoss(event.GetInt("thrower_entindex"), true);
-	BaseBoss jarateed = BaseBoss(event.GetInt("victim_entindex"), true);
-	ManagePlayerJarated(jarateer, jarateed);
+	BaseBoss victim = BaseBoss( event.GetInt("userid"), true );
+	int attacker = event.GetInt("attackerid");
+	ManageBossJarated(victim, attacker);
 	return Plugin_Continue;
 }
 
